@@ -24,24 +24,6 @@
   </style>
 </div>
 
-<div align="center">
-  <a href="https://github.com/dinethnethsara/DinethMD/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/dinethnethsara/DinethMD"></a>
-  <a href="https://github.com/dinethnethsara/DinethMD/network"><img alt="GitHub forks" src="https://img.shields.io/github/forks/dinethnethsara/DinethMD"></a>
-  <a href="https://github.com/dinethnethsara/DinethMD/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/dinethnethsara/DinethMD"></a>
-  <a href="https://github.com/dinethnethsara/DinethMD/blob/main/LICENSE"><img alt="GitHub license" src="https://img.shields.io/github/license/dinethnethsara/DinethMD"></a>
-</div>
-
-## 📋 Table of Contents
-- [🚀 Features](#-features)
-- [📋 Prerequisites](#-prerequisites)
-- [⚡ Quick Setup](#-quick-setup)
-- [🛠️ Configuration](#️-configuration)
-- [📚 Command Usage](#-command-usage)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
-- [🙏 Acknowledgments](#-acknowledgments)
-- [⚠️ Disclaimer](#️-disclaimer)
-
 ## 🚀 Features
 
 - **Enhanced Security**
@@ -106,5 +88,84 @@
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/dinethnethsara/DinethMD.git
+   git clone https://github.com/yourusername/DinethMD.git
    cd DinethMD
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Configure environment variables**
+   - Create a `.env` file in the root directory
+   - Add your API keys:
+     ```env
+     YOUTUBE_API_KEY=your_youtube_api_key
+     INSTAGRAM_ACCESS_TOKEN=your_instagram_token
+     SPOTIFY_ACCESS_TOKEN=your_spotify_token
+     OPENAI_API_KEY=your_openai_api_key
+     ```
+
+4. **Start the bot**
+   ```bash
+   npm start
+   ```
+
+5. **Scan QR Code**
+   - Scan the QR code with WhatsApp to connect
+
+## 🛠️ Configuration
+
+Customize your bot by modifying `config.js`:
+
+```javascript
+module.exports = {
+  botName: 'Your Bot Name',
+  prefix: '!',
+  owner: ['your_number@s.whatsapp.net'],
+  // Add other configuration options
+};
+```
+
+## 📚 Command Usage
+
+1. **Anti Message Deletion**
+   - Messages are automatically preserved
+   - Deleted messages are resent with "[DELETED]" prefix
+
+2. **Anti View Once**
+   - View once media is automatically saved
+   - Media is resent as normal message
+
+3. **Media Downloads**
+   - `.ytv <url>` - Download YouTube videos
+   - `.ig <url>` - Download Instagram media
+   - `.tiktok <url>` - Download TikTok videos
+   - `.spotify <url>` - Get Spotify track info
+
+4. **Group Commands**
+   - `.admin` - Access admin controls
+   - `.poll` - Create group polls
+   - `.help` - View command list
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Thanks to all contributors
+- Built with [Baileys](https://github.com/adiwajshing/Baileys)
+
+## ⚠️ Disclaimer
+
+This project is not affiliated with WhatsApp Inc. Use at your own risk.
+
+<div align="center">
+  Made with ❤️ by Dineth Nethsara
+</div>
