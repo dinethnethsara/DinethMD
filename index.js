@@ -6,28 +6,20 @@ const fs = require('fs');
 const config = require('./config');
 const qrcode = require('qrcode-terminal');
 const { displayStartupBanner, displayConnectionStatus } = require('./utils/startupHandler');
+const groupEvents = require('./commands/group/events');
 
 // Display startup banner
 displayStartupBanner();
 
-// Initialize command handlers
-const commandHandlers = new Map();
-const commandsPath = path.join(__dirname, 'commands');
-
-// Create commands directory if it doesn't exist
-if (!fs.existsSync(commandsPath)) {
-    fs.mkdirSync(commandsPath, { recursive: true });
+// Initialize command loader
+const commandLoader = require('./utils/commandLoader');
+const messageHandler = require('./utils/messageHandler');
+const { handleMessageReaction } = require('./commands/group/events');
 }
 
-// Function to load command handlers
+// Function to load commands
 async function loadCommands() {
-    const categories = Object.keys(config.categories);
-    for (const category of categories) {
-        const categoryPath = path.join(commandsPath, category);
-        if (!fs.existsSync(categoryPath)) {
-            fs.mkdirSync(categoryPath, { recursive: true });
-        }
-    }
+    await commandLoader.loadCommands();
 }
 
 // Function to handle messages
@@ -48,14 +40,25 @@ async function messageHandler(msg, sock) {
     const [command, ...args] = messageText.slice(1).trim().split(' ');
     const sender = msg.key.remoteJid;
 
-    // Handle menu command
-    if (command === 'menu' || command === 'help') {
+    // Handle commands
+    const cmd = commandLoader.getCommand(command);
+    if (cmd) {
+        try {
+            await cmd.execute(sock, msg, args);
+        } catch (error) {
+            console.error(`Error executing command ${command}:`, error);
+            const errorMessage = commandLoader.formatErrorMessage('An error occurred while processing your command.');
+            await sock.sendMessage(sender, { text: errorMessage });
+        }
+    } else if (command === 'menu' || command === 'help') {
+        const categories = commandLoader.getCategories();
         let menuText = `*🤖 ${config.botName}*\n\n`;
 
-        for (const [categoryKey, category] of Object.entries(config.categories)) {
-            menuText += `${category.emoji} *${category.name}*\n`;
-            for (const cmd of category.commands) {
-                menuText += `  • ${config.prefix}${cmd.cmd} - ${cmd.desc}\n`;
+        for (const category of categories) {
+            const commands = commandLoader.getCommandsByCategory(category);
+            menuText += `${config.categories[category]?.emoji || '📌'} *${category}*\n`;
+            for (const cmd of commands) {
+                menuText += `  • ${config.prefix}${cmd.name} - ${cmd.description}\n`;
             }
             menuText += '\n';
         }
@@ -64,18 +67,6 @@ async function messageHandler(msg, sock) {
         menuText += `\n🔰 Powered by Dineth MD`;
 
         await sock.sendMessage(sender, { text: menuText });
-        return;
-    }
-
-    // Handle other commands (to be implemented in separate files)
-    const handler = commandHandlers.get(command);
-    if (handler) {
-        try {
-            await handler(sock, msg, args);
-        } catch (error) {
-            console.error(`Error executing command ${command}:`, error);
-            await sock.sendMessage(sender, { text: 'An error occurred while processing your command.' });
-        }
     }
 }
 

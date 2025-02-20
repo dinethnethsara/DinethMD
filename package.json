@@ -17,6 +17,7 @@
   "dependencies": {
     "@whiskeysockets/baileys": "^6.4.0",
     "axios": "^1.4.0",
+    "boxen": "^8.0.1",
     "chalk": "^4.1.2",
     "dotenv": "^16.3.1",
     "ffmpeg-static": "^5.1.0",

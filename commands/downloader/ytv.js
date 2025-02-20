@@ -3,115 +3,93 @@ const fs = require('fs');
 const path = require('path');
 const config = require('../../config');
 
-module.exports = async (sock, msg, args) => {
-    const sender = msg.key.remoteJid;
+module.exports = {
+    name: 'ytv',
+    category: 'downloader',
+    description: 'Download YouTube videos in high quality',
+    async execute(msg, args, client) {
+        const sender = msg.key.remoteJid;
 
-    try {
-        if (!args[0]) {
-            await sock.sendMessage(sender, { 
-                text: '🎥 *YouTube Video Downloader*\n\n📝 *Usage Guide:*\n• Command: !ytv <url>\n• Supports: All video qualities\n\n💡 *Example:*\n!ytv https://youtube.com/watch?v=example\n\n🤖 _Powered by Dineth MD_' 
-            });
-            return;
-        }
-
-        const videoUrl = args[0];
-
-        // Validate URL format
-        if (!videoUrl.match(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/)) {
-            await sock.sendMessage(sender, { 
-                text: '❌ *Invalid URL Format*\n\n• Please provide a valid YouTube URL\n• Supported formats: youtube.com, youtu.be\n\n🤖 _Powered by Dineth MD_' 
-            });
-            return;
-        }
-
-        // Send processing message
-        await sock.sendMessage(sender, { 
-            text: `🎥 *YouTube Download*\n\n⏳ *Status:* Processing\n🔗 *URL:* ${videoUrl}\n\n⌛ Please wait while I fetch the video...\n\n🤖 _Powered by Dineth MD_` 
-        });
-
-        // Get video info
-        const videoInfo = await ytdl.getInfo(videoUrl);
-        const videoTitle = videoInfo.videoDetails.title;
-        const duration = parseInt(videoInfo.videoDetails.lengthSeconds);
-        const minutes = Math.floor(duration / 60);
-        const seconds = duration % 60;
-
-        // Create temporary directory if it doesn't exist
-        const tempDir = path.join(__dirname, '../../temp');
-        if (!fs.existsSync(tempDir)) {
-            fs.mkdirSync(tempDir, { recursive: true });
-        }
-
-        // Set up download options
-        const options = {
-            quality: config.download.quality === 'highest' ? 'highest' : 'lowest',
-            filter: 'videoandaudio'
-        };
-
-        // Download and save video
-        const videoPath = path.join(tempDir, `${Date.now()}.mp4`);
-        const videoStream = ytdl(videoUrl, options);
-        const fileStream = fs.createWriteStream(videoPath);
-
-        videoStream.pipe(fileStream);
-
-        // Send progress message
-        await sock.sendMessage(sender, {
-            text: `🎥 *Video Information*\n\n📝 *Title:* ${videoTitle}\n⏱️ *Duration:* ${minutes}:${seconds.toString().padStart(2, '0')}\n📊 *Quality:* ${config.download.quality}\n\n⏳ *Status:* Downloading...\n\n🤖 _Powered by Dineth MD_`
-        });
-
-        fileStream.on('finish', async () => {
-            try {
-                // Send video file
-                await sock.sendMessage(sender, {
-                    video: fs.readFileSync(videoPath),
-                    caption: `🎥 *Download Complete*\n\n📝 *Title:* ${videoTitle}\n⏱️ *Duration:* ${minutes}:${seconds.toString().padStart(2, '0')}\n📊 *Quality:* ${config.download.quality}\n\n✨ *Status:* Complete\n\n🤖 _Powered by Dineth MD_`
+        try {
+            if (!args.length) {
+                await client.sendMessage(sender, { 
+                    text: '❌ Please provide a YouTube video URL!\n\nExample: !ytv https://youtu.be/xxxxx' 
                 });
-
-                // Clean up temporary file
-                fs.unlinkSync(videoPath);
-            } catch (error) {
-                console.error('Error sending video:', error);
-                await sock.sendMessage(sender, { 
-                    text: '❌ *Send Error*\n\n• Failed to send video\n• File might be too large\n\n🤖 _Powered by Dineth MD_' 
-                });
+                return;
             }
-        });
 
-        fileStream.on('error', async (error) => {
-            console.error('Error downloading video:', error);
-            await sock.sendMessage(sender, { 
-                text: '❌ *Download Error*\n\n• Failed to download video\n• Please try again later\n\n🤖 _Powered by Dineth MD_' 
+            const url = args[0];
+            if (!ytdl.validateURL(url)) {
+                await client.sendMessage(sender, { 
+                    text: '❌ Invalid YouTube URL! Please provide a valid YouTube video link.' 
+                });
+                return;
+            }
+
+            // Send processing message
+            await client.sendMessage(sender, { 
+                text: '⏳ Processing your request... Please wait.' 
             });
-        });
 
-        videoStream.on('error', async (error) => {
-            console.error('Error streaming video:', error);
-            await sock.sendMessage(sender, { 
-                text: '❌ *Stream Error*\n\n• Failed to stream video\n• Video might be unavailable\n\n🤖 _Powered by Dineth MD_' 
+            // Get video info
+            const info = await ytdl.getInfo(url);
+            const videoTitle = info.videoDetails.title;
+            const thumbnail = info.videoDetails.thumbnails[0].url;
+
+            // Create temporary directory if it doesn't exist
+            const tempDir = path.join(__dirname, '../../temp');
+            if (!fs.existsSync(tempDir)) {
+                fs.mkdirSync(tempDir, { recursive: true });
+            }
+
+            // Set up download path
+            const videoPath = path.join(tempDir, `${Date.now()}.mp4`);
+
+            // Download video
+            const video = ytdl(url, { 
+                quality: 'highest',
+                filter: 'audioandvideo'
             });
-        });
 
-    } catch (error) {
-        console.error('Error in ytv command:', error);
-        let errorMessage = '❌ *Processing Error*\n\n';
+            const writeStream = fs.createWriteStream(videoPath);
+            video.pipe(writeStream);
 
-        if (error.message.includes('Video unavailable')) {
-            errorMessage += '• Video is unavailable or private\n';
-        } else if (error.message.includes('age-restricted')) {
-            errorMessage += '• Video is age-restricted\n';
-        } else {
-            errorMessage += '• An unexpected error occurred\n';
+            writeStream.on('finish', async () => {
+                // Send the video
+                await client.sendMessage(sender, {
+                    video: fs.readFileSync(videoPath),
+                    caption: `🎥 *${videoTitle}*\n\n_Powered by Dineth MD_`,
+                    contextInfo: {
+                        externalAdReply: {
+                            title: "✨ Dineth MD - YouTube Downloader",
+                            body: videoTitle,
+                            thumbnailUrl: thumbnail,
+                            sourceUrl: url,
+                            mediaType: 1,
+                            renderLargerThumbnail: true
+                        }
+                    }
+                });
+
+                // Clean up
+                fs.unlinkSync(videoPath);
+            });
+
+            writeStream.on('error', async (error) => {
+                console.error('Error downloading video:', error);
+                await client.sendMessage(sender, { 
+                    text: '❌ An error occurred while downloading the video. Please try again later.' 
+                });
+                if (fs.existsSync(videoPath)) {
+                    fs.unlinkSync(videoPath);
+                }
+            });
+
+        } catch (error) {
+            console.error('Error in YouTube download:', error);
+            await client.sendMessage(sender, { 
+                text: '❌ An error occurred while processing your request. Please try again later.' 
+            });
         }
-
-        errorMessage += '\n💡 *Tip:* Make sure the video is public and accessible\n\n🤖 _Powered by Dineth MD_';
-
-        await sock.sendMessage(sender, { text: errorMessage });
     }
-};
-
-} catch (error) {
-    console.error('Error in ytv command:', error);
-    await sock.sendMessage(sender, { text: '❌ *Processing Error*\n\n• An error occurred\n• Please try again later\n\n🤖 _Powered by Dineth MD_' });
-}
 };

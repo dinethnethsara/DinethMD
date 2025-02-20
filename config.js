@@ -2,7 +2,7 @@ module.exports = {
     // Bot Info
     botName: "Dineth MD - Ultimate WhatsApp Bot",
     ownerName: "Dineth Nethsara",
-    ownerNumber: ["1234567890"],
+    ownerNumber: ["+94741566800"],
     prefix: '.',
 
     // Menu Settings
@@ -11,6 +11,35 @@ module.exports = {
     menuFooter: "Thanks for using our bot!",
 
     // Feature Categories
+    // Menu Style Settings
+    menuStyle: {
+        gradientColors: ['#FF0000', '#00FF00', '#0000FF', '#800080', '#FFA500'],
+        borderStyle: 'fancy',
+        headerFont: 'ANSI Shadow',
+        useGradient: true,
+        useShadow: true,
+        useEmoji: true,
+        useBoxen: true,
+        boxenOptions: {
+            padding: 1,
+            margin: 1,
+            borderStyle: 'double',
+            borderColor: 'cyan',
+            backgroundColor: '#1B1B1B'
+        },
+        asciiArt: {
+            enabled: true,
+            font: 'Standard',
+            horizontalLayout: 'default',
+            verticalLayout: 'default'
+        },
+        categoryStyle: {
+            useIcons: true,
+            showCount: true,
+            collapsible: true
+        }
+    },
+
     categories: {
         filemanager: {
             name: "File Manager",
@@ -82,6 +111,39 @@ module.exports = {
                 { cmd: "math", desc: "Math quiz game" },
                 { cmd: "riddle", desc: "Solve riddles" },
                 { cmd: "wordle", desc: "Play Wordle game" }
+            ]
+        },
+        ai: {
+            name: "AI Features",
+            emoji: "🤖",
+            commands: [
+                { cmd: "chat", desc: "Chat with AI assistant" },
+                { cmd: "imagine", desc: "Generate AI images" },
+                { cmd: "translate", desc: "Translate text using AI" },
+                { cmd: "summarize", desc: "Summarize long texts" },
+                { cmd: "code", desc: "Get coding help from AI" }
+            ]
+        },
+        utility: {
+            name: "Utilities",
+            emoji: "🛠️",
+            commands: [
+                { cmd: "weather", desc: "Get weather info" },
+                { cmd: "calculator", desc: "Perform calculations" },
+                { cmd: "reminder", desc: "Set reminders" },
+                { cmd: "poll", desc: "Create polls" },
+                { cmd: "schedule", desc: "Schedule messages" }
+            ]
+        },
+        fun: {
+            name: "Fun",
+            emoji: "🎯",
+            commands: [
+                { cmd: "meme", desc: "Get random memes" },
+                { cmd: "joke", desc: "Get random jokes" },
+                { cmd: "ascii", desc: "Create ASCII art" },
+                { cmd: "quote", desc: "Get random quotes" },
+                { cmd: "fact", desc: "Get random facts" }
             ]
         },
         downloader: {
